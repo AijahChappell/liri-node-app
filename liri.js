@@ -1,31 +1,35 @@
 require("dotenv").config();
 var keys = require("./keys.js");
 
+const axios = require("axios");
 const Spotify = require("node-spotify-api");
 const request = require("request");
 const moment = require("moment");
 const fs = require("fs");
 const newLocal = keys.spotify;
-var spotify = new Spotify(newLocal);
+let spotify = new Spotify(newLocal);
 console.log(newLocal);
-var argArr = process.argv;
+let argArr = process.argv;
 
-var userData = "";
-var userDataTwo = "";
+let userData = "";
+let userDataTwo = "";
 
 for (let i = 3; i < argArr.length; i++) {
     if (i > 3 && i < argArr.length) {
-        userData = userData + "%20" + argArr[i];
+        userData = userData + "+" + argArr[i];
     } else {
         userData += argArr[i];
     }
-    //Remove URL encoding to push to log.txt
-    for (let i = 3; i < argArr.length; i++) {
-        userDataTwo = userDataTwo.replace(/%20/g, " ");
-    };
+
 };
 
-const userCommand = process.argv[2];
+for (var i = 3; i < argArr.length; i++) {
+
+    userDataTwo = userData.replace("+", " ");
+
+}
+
+let userCommand = process.argv[2];
 console.log(userCommand);
 console.log(argArr);
 runLiri();
@@ -34,9 +38,8 @@ function runLiri() {
     switch (userCommand) {
         case "spotify-this-song":
             console.log("here");
-            if (!userData) {
-                userData = "The%20Sign";
-                userDataTwo = userDataTwo.replace(/%20/g, " ");
+            if (!userDataTwo) {
+                userDataTwo = "The Sign";
             }
             fs.appendFileSync("log.txt", userDataTwo + "\n----------------\n", function (err) {
                 if (err) {
@@ -44,16 +47,17 @@ function runLiri() {
                 };
             });
 
+
             console.log(spotify);
             spotify.search({
                 type: "track",
-                query: userData
+                query: userDataTwo
             }, function (err, data) {
                 if (err) {
                     console.log(err)
                 }
                 console.log(data);
-                var info = data.tracks.items
+                let info = data.tracks.items
 
                 for (let i = 0; i < info.length; i++) {
                     var albumObject = info[i].album;
@@ -76,81 +80,87 @@ function runLiri() {
                 }
             })
             break;
+        case "movie-this":
+            if (!userData) {
+                userData = "Mr+Nobody";
+                userDataTwo = "Mr Nobody";
+            }
+            
+            fs.appendFileSync("log.txt", userDataTwo + "\n----------------\n", function (err) {
+
+                if (err) {
+
+                    console.log(err);
+
+                };
+
+            });
+            
+            var queryURL = "https://www.omdbapi.com/?t=" + userData + "&y=&plot=short&apikey=trilogy"
+            console.log(queryURL);
+            axios.get(queryURL).then(function (body) {
+                console.log(body.data);
+
+                
+
+                    let info = body.data;
+                    console.log(info);
+                    console.log("Title: " + info.Title)
+
+                    console.log("Release Year: " + info.Year)
+
+                    console.log("OMDB Rating: " + info.Ratings[0].Value)
+
+                    console.log("Rating: " + info.Ratings[1].Value)
+
+                    console.log("Country: " + info.Country)
+
+                    console.log("Language: " + info.Language)
+
+                    console.log("Plot: " + info.Plot)
+
+                    console.log("Actors: " + info.Actors)
+
+
+
+                    //Append data to log.txt
+
+                    fs.appendFileSync("log.txt", "Title: " + info.Title + "\nRelease Year: " + info.Year + "\nIMDB Rating: " + info.Ratings[0].Value + "\nRating: " +
+
+                        info.Ratings[1].Value + "\nCountry: " + info.Country + "\nLanguage: " + info.Language + "\nPlot: " + info.Plot + "\nActors: " + info.Actors + "\n----------------\n",
+
+                        function (err) {
+
+                            if (err) {
+
+                                console.log(err);
+
+                            };
+                    
+                        
+                        
+                        
+                    })
+});
+
+break;
     }
 }
 
-// console.log(userDataTwo);
-// Make it so liri.js can take in one of the following commands:
+if (userCommand == "do-what-it-says") {
 
-//    * `concert-this`
+    fs.readFile("random.txt", "utf8", function (err, data) {
 
-//    * `spotify-this-song`
+        if (err) {
+            return console.log(err)
+        }
 
-//    * `movie-this`
+        let textArr = data.split(",");
+        userCommand = textArr[0];
+        userData = textArr[1];
 
-//    * `do-what-it-says`
+        runLiri();
 
-// ### What Each Command Should Do
+    })
 
-// 1. `node liri.js concert-this <artist/band name here>`
-
-//    * This will search the Bands in Town Artist Events API (`"https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp"`) for an artist and render the following information about each event to the terminal:
-
-//      * Name of the venue
-
-//      * Venue location
-
-//      * Date of the Event (use moment to format this as "MM/DD/YYYY")
-
-// 2. `node liri.js spotify-this-song '<song name here>'`
-
-//    * This will show the following information about the song in your terminal/bash window
-
-//      * Artist(s)
-
-//      * The song's name
-
-//      * A preview link of the song from Spotify
-
-//      * The album that the song is from
-
-//    * If no song is provided then your program will default to "The Sign" by Ace of Base.
-
-// 3. `node liri.js movie-this '<movie name here>'`
-
-//    * This will output the following information to your terminal/bash window:
-
-//      ```
-//        * Title of the movie.
-//        * Year the movie came out.
-//        * IMDB Rating of the movie.
-//        * Rotten Tomatoes Rating of the movie.
-//        * Country where the movie was produced.
-//        * Language of the movie.
-//        * Plot of the movie.
-//        * Actors in the movie.
-//      ```
-
-//    * If the user doesn't type a movie in, the program will output data for the movie 'Mr. Nobody.'
-
-//      * If you haven't watched "Mr. Nobody," then you should: <http://www.imdb.com/title/tt0485947/>
-
-//      * It's on Netflix!
-
-//    * You'll use the `axios` package to retrieve data from the OMDB API. Like all of the in-class activities, the OMDB API requires an API key. You may use `trilogy`.
-
-// 4. `node liri.js do-what-it-says`
-
-//    * Using the `fs` Node package, LIRI will take the text inside of random.txt and then use it to call one of LIRI's commands.
-
-//      * It should run `spotify-this-song` for "I Want it That Way," as follows the text in `random.txt`.
-
-//      * Edit the text in random.txt to test out the feature for movie-this and concert-this.
-
-// ### BONUS
-
-// * In addition to logging the data to your terminal/bash window, output the data to a .txt file called `log.txt`.
-
-// * Make sure you append each command you run to the `log.txt` file. 
-
-// * Do not overwrite your file each time you run a command.
+}
