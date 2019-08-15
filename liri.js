@@ -1,14 +1,85 @@
 require("dotenv").config();
 var keys = require("./keys.js");
-var spotify = new Spotify(keys.spotify);
 
-const Spotify = require ("node-spotify-api");
-const request = require ("request");
-const moment = require ("moment");
-const fs = require ("fs");
+const Spotify = require("node-spotify-api");
+const request = require("request");
+const moment = require("moment");
+const fs = require("fs");
+const newLocal = keys.spotify;
+var spotify = new Spotify(newLocal);
+console.log(newLocal);
+var argArr = process.argv;
 
-let argArr = process.argv;
+var userData = "";
+var userDataTwo = "";
+
+for (let i = 3; i < argArr.length; i++) {
+    if (i > 3 && i < argArr.length) {
+        userData = userData + "%20" + argArr[i];
+    } else {
+        userData += argArr[i];
+    }
+    //Remove URL encoding to push to log.txt
+    for (let i = 3; i < argArr.length; i++) {
+        userDataTwo = userDataTwo.replace(/%20/g, " ");
+    };
+};
+
+const userCommand = process.argv[2];
+console.log(userCommand);
 console.log(argArr);
+runLiri();
+
+function runLiri() {
+    switch (userCommand) {
+        case "spotify-this-song":
+            console.log("here");
+            if (!userData) {
+                userData = "The%20Sign";
+                userDataTwo = userDataTwo.replace(/%20/g, " ");
+            }
+            fs.appendFileSync("log.txt", userDataTwo + "\n----------------\n", function (err) {
+                if (err) {
+                    console.log(err);
+                };
+            });
+
+            console.log(spotify);
+            spotify.search({
+                type: "track",
+                query: userData
+            }, function (err, data) {
+                if (err) {
+                    console.log(err)
+                }
+                console.log(data);
+                var info = data.tracks.items
+
+                for (let i = 0; i < info.length; i++) {
+                    var albumObject = info[i].album;
+                    var songName = info[i].name;
+                    var preview = info[i].preview_url;
+                    var artistInfo = albumObject.artists;
+                    console.log(artistInfo);
+                    for (let j = 0; j < artistInfo.length; j++) {
+                        console.log("Artist: " + artistInfo[j].name);
+                        console.log("Song Name: " + songName);
+                        console.log("Preview of Song: " + preview);
+                        console.log("Album Name: " + albumObject.name);
+
+                        fs.appendFileSync("log.txt", "Artist: " + artistInfo[j].name + "\nSong Name: " + songName + "\nPreview of Song: " + preview + "\nAlbum Name: " + albumObject.name + "\n----------------\n", function (err) {
+                            if (err) {
+                                console.log(err);
+                            };
+                        });
+                    }
+                }
+            })
+            break;
+    }
+}
+
+// console.log(userDataTwo);
 // Make it so liri.js can take in one of the following commands:
 
 //    * `concert-this`
