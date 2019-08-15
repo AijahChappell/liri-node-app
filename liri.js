@@ -8,7 +8,6 @@ const moment = require("moment");
 const fs = require("fs");
 const newLocal = keys.spotify;
 let spotify = new Spotify(newLocal);
-console.log(newLocal);
 let argArr = process.argv;
 
 let userData = "";
@@ -30,14 +29,12 @@ for (var i = 3; i < argArr.length; i++) {
 }
 
 let userCommand = process.argv[2];
-console.log(userCommand);
-console.log(argArr);
+
 runLiri();
 
 function runLiri() {
     switch (userCommand) {
         case "spotify-this-song":
-            console.log("here");
             if (!userDataTwo) {
                 userDataTwo = "The Sign";
             }
@@ -48,7 +45,6 @@ function runLiri() {
             });
 
 
-            console.log(spotify);
             spotify.search({
                 type: "track",
                 query: userDataTwo
@@ -56,15 +52,15 @@ function runLiri() {
                 if (err) {
                     console.log(err)
                 }
-                console.log(data);
+
                 let info = data.tracks.items
 
                 for (let i = 0; i < info.length; i++) {
-                    var albumObject = info[i].album;
-                    var songName = info[i].name;
-                    var preview = info[i].preview_url;
-                    var artistInfo = albumObject.artists;
-                    console.log(artistInfo);
+                    let albumObject = info[i].album;
+                    let songName = info[i].name;
+                    let preview = info[i].preview_url;
+                    let artistInfo = albumObject.artists;
+
                     for (let j = 0; j < artistInfo.length; j++) {
                         console.log("Artist: " + artistInfo[j].name);
                         console.log("Song Name: " + songName);
@@ -85,7 +81,7 @@ function runLiri() {
                 userData = "Mr+Nobody";
                 userDataTwo = "Mr Nobody";
             }
-            
+
             fs.appendFileSync("log.txt", userDataTwo + "\n----------------\n", function (err) {
 
                 if (err) {
@@ -95,55 +91,45 @@ function runLiri() {
                 };
 
             });
-            
+
             var queryURL = "https://www.omdbapi.com/?t=" + userData + "&y=&plot=short&apikey=trilogy"
-            console.log(queryURL);
+
             axios.get(queryURL).then(function (body) {
-                console.log(body.data);
 
-                
+                let info = body.data;
 
-                    let info = body.data;
-                    console.log(info);
-                    console.log("Title: " + info.Title)
+                console.log("Title: " + info.Title)
 
-                    console.log("Release Year: " + info.Year)
+                console.log("Release Year: " + info.Year)
 
-                    console.log("OMDB Rating: " + info.Ratings[0].Value)
+                console.log("OMDB Rating: " + info.Ratings[0].Value)
 
-                    console.log("Rating: " + info.Ratings[1].Value)
+                console.log("Rating: " + info.Ratings[1].Value)
 
-                    console.log("Country: " + info.Country)
+                console.log("Country: " + info.Country)
 
-                    console.log("Language: " + info.Language)
+                console.log("Language: " + info.Language)
 
-                    console.log("Plot: " + info.Plot)
+                console.log("Plot: " + info.Plot)
 
-                    console.log("Actors: " + info.Actors)
+                console.log("Actors: " + info.Actors)
 
+                fs.appendFileSync("log.txt", "Title: " + info.Title + "\nRelease Year: " + info.Year + "\nIMDB Rating: " + info.Ratings[0].Value + "\nRating: " +
 
+                    info.Ratings[1].Value + "\nCountry: " + info.Country + "\nLanguage: " + info.Language + "\nPlot: " + info.Plot + "\nActors: " + info.Actors + "\n----------------\n",
 
-                    //Append data to log.txt
+                    function (err) {
 
-                    fs.appendFileSync("log.txt", "Title: " + info.Title + "\nRelease Year: " + info.Year + "\nIMDB Rating: " + info.Ratings[0].Value + "\nRating: " +
+                        if (err) {
 
-                        info.Ratings[1].Value + "\nCountry: " + info.Country + "\nLanguage: " + info.Language + "\nPlot: " + info.Plot + "\nActors: " + info.Actors + "\n----------------\n",
+                            console.log(err);
 
-                        function (err) {
+                        };
 
-                            if (err) {
-
-                                console.log(err);
-
-                            };
-                    
-                        
-                        
-                        
                     })
-});
+            });
 
-break;
+            break;
     }
 }
 
